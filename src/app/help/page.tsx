@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
-import { Bot, History, Plus, Send, Trash2 } from 'lucide-react';
+import { Bot, History, Plus, Send, Trash2, User, Info } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HelpPage() {
@@ -30,7 +30,7 @@ export default function HelpPage() {
             </CardHeader>
             <CardContent className="space-y-4 text-muted-foreground">
               <p>
-                From the main menu, click the <span className="font-semibold text-foreground">"Start Chatting"</span> button to open the chat interface.
+                From the main menu, you can sign in, sign up, or continue as a guest to get to the chat interface.
               </p>
               <div className="flex items-center gap-2 p-3 rounded-md border">
                 <Send className="w-5 h-5" />
@@ -70,11 +70,11 @@ export default function HelpPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-muted-foreground">
-              <p>
-                Clicking the <span className="font-semibold text-foreground">Tesseract AI</span> logo in the chat sidebar will clear all your chats and take you back to the main menu. This is a quick way to reset your session.
+                 <p>
+                Clicking the <span className="font-semibold text-foreground">Tesseract AI</span> logo in the chat sidebar will clear all your locally stored chats and take you back to the main menu. This is a quick way to reset your session.
               </p>
-              <p className="font-semibold text-foreground">
-                Your privacy is important. All conversations are stored locally in your browser and are never sent to a server for storage. Clearing your browser data will permanently delete your chat history.
+              <p>
+                Your privacy is important. If you are logged in, your chats are saved to your account. If you are a guest, conversations are stored locally in your browser and are not persisted on a server. Clearing your browser data will permanently delete your guest chat history.
               </p>
             </CardContent>
           </Card>
