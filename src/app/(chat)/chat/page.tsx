@@ -24,6 +24,7 @@ export default function ChatPage() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -42,6 +43,7 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
+    if (isInitialLoadComplete) return;
     try {
       const savedChats = localStorage.getItem('tesseract-chats');
       if (savedChats) {
@@ -59,10 +61,13 @@ export default function ChatPage() {
       console.error("Failed to load chats:", error);
       toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Starting a new session." });
       handleNewChat();
+    } finally {
+        setIsInitialLoadComplete(true);
     }
-  }, [handleNewChat, toast]);
+  }, [handleNewChat, toast, isInitialLoadComplete]);
 
   useEffect(() => {
+    if (!isInitialLoadComplete) return;
     if (chats.length > 0) {
       try {
         localStorage.setItem('tesseract-chats', JSON.stringify(chats));
@@ -73,7 +78,7 @@ export default function ChatPage() {
     } else if (localStorage.getItem('tesseract-chats')) {
       localStorage.removeItem('tesseract-chats');
     }
-  }, [chats, toast]);
+  }, [chats, toast, isInitialLoadComplete]);
   
   useEffect(() => {
     if (scrollRef.current) {
@@ -89,7 +94,8 @@ export default function ChatPage() {
         if (remainingChats.length > 0) {
           setActiveChatId(remainingChats[0].id);
         } else {
-          setActiveChatId(null);
+          // This will trigger the effect below to create a new chat
+          setActiveChatId(null); 
         }
       }
       return remainingChats;
@@ -103,10 +109,10 @@ export default function ChatPage() {
 
   // Effect to create a new chat if all are deleted.
   useEffect(() => {
-    if (chats.length === 0 && activeChatId === null) {
+    if (isInitialLoadComplete && chats.length === 0 && activeChatId === null) {
       handleNewChat();
     }
-  }, [chats, activeChatId, handleNewChat]);
+  }, [chats, activeChatId, handleNewChat, isInitialLoadComplete]);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -153,6 +159,14 @@ export default function ChatPage() {
       setIsLoading(false);
     }
   };
+
+  if (!isInitialLoadComplete) {
+    return (
+        <div className="flex h-dvh w-full items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin" />
+        </div>
+    );
+  }
 
   return (
     <div className="flex h-dvh w-full">
