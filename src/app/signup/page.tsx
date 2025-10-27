@@ -92,11 +92,28 @@ function SignUpPageContent() {
     } catch (error: any) {
       console.error(error);
       setIsLoading(false);
-      toast({
-        variant: 'destructive',
-        title: 'Sign Up Failed',
-        description: error.message || 'Could not create account. The email might be in use.',
-      });
+      
+      if (error.code === 'auth/email-already-in-use') {
+        toast({
+          variant: 'destructive',
+          title: 'Sign Up Failed',
+          description: (
+            <>
+              An account with this email already exists. Please{' '}
+              <Link href="/login" className="underline">
+                sign in
+              </Link>{' '}
+              instead.
+            </>
+          ),
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Sign Up Failed',
+          description: error.message || 'Could not create account. Please try again.',
+        });
+      }
     }
   }
 
