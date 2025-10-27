@@ -1,11 +1,10 @@
 
 "use client"
 
-import { Bot, User, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Bot, User, Copy, ThumbsUp, ThumbsDown, Lightbulb, Target, Laugh } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Typewriter } from "@/components/ui/typewriter";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/lib/types";
@@ -50,11 +49,7 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
         )}
       >
         <div className="prose prose-sm dark:prose-invert max-w-none text-current prose-p:my-0">
-          {isUser ? (
-            <p className="whitespace-pre-wrap">{content}</p>
-          ) : (
-            <Typewriter text={content} />
-          )}
+           <p className="whitespace-pre-wrap">{content}</p>
         </div>
         {!isUser && content && (
           <>
@@ -71,6 +66,18 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <ThumbsDown className="w-4 h-4" />
                 <span className="sr-only">Dislike</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Lightbulb className="w-4 h-4" />
+                <span className="sr-only">Insightful</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Target className="w-4 h-4" />
+                <span className="sr-only">On Target</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Laugh className="w-4 h-4" />
+                <span className="sr-only">Funny</span>
               </Button>
             </div>
           </>
@@ -90,3 +97,4 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
     </div>
   );
 }
+

@@ -1,8 +1,15 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
-export function Typewriter({ text, speed = 20 }: { text: string, speed?: number }) {
+interface TypewriterProps {
+  text: string;
+  speed?: number;
+  onComplete?: () => void;
+}
+
+const Typewriter = memo(({ text, speed = 20, onComplete }: TypewriterProps) => {
   const [displayedText, setDisplayedText] = useState('');
 
   useEffect(() => {
@@ -10,15 +17,23 @@ export function Typewriter({ text, speed = 20 }: { text: string, speed?: number 
     if (text) {
       let i = 0;
       const timer = setInterval(() => {
-        setDisplayedText(text.slice(0, i));
-        i++;
-        if (i > text.length) {
+        if (i < text.length) {
+          setDisplayedText(prev => prev + text.charAt(i));
+          i++;
+        } else {
           clearInterval(timer);
+          if (onComplete) {
+            onComplete();
+          }
         }
       }, speed);
       return () => clearInterval(timer);
     }
-  }, [text, speed]);
+  }, [text, speed, onComplete]);
 
-  return <div style={{ whiteSpace: 'pre-wrap' }}>{displayedText}</div>;
-}
+  return <div className="whitespace-pre-wrap">{displayedText}</div>;
+});
+
+Typewriter.displayName = 'Typewriter';
+
+export { Typewriter };
