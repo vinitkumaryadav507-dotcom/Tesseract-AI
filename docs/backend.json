@@ -6,10 +6,6 @@
       "type": "object",
       "description": "Represents a single chat session between the user and the AI chatbot.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the chat session."
-        },
         "userId": {
           "type": "string",
           "description": "Reference to the User entity."
@@ -31,18 +27,23 @@
             "properties": {
               "role": {
                 "type": "string",
-                "enum": ["user", "model"]
+                "enum": [
+                  "user",
+                  "model"
+                ]
               },
               "content": {
                 "type": "string"
               }
             },
-            "required": ["role", "content"]
+            "required": [
+              "role",
+              "content"
+            ]
           }
         }
       },
       "required": [
-        "id",
         "userId",
         "title",
         "createdAt"
@@ -52,7 +53,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the AI chatbot application, including personalization data.",
+      "description": "Represents a user of the AI chatbot application, including personalization and gamification data.",
       "properties": {
         "id": {
           "type": "string",
@@ -90,7 +91,12 @@
           "properties": {
             "communicationStyle": {
               "type": "string",
-              "enum": ["formal", "casual", "direct", "story-telling"]
+              "enum": [
+                "formal",
+                "casual",
+                "direct",
+                "story-telling"
+              ]
             },
             "topicsOfInterest": {
               "type": "array",
@@ -147,6 +153,62 @@
               }
             },
             "emotionalPatterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "achievements": {
+          "type": "object",
+          "description": "Tracks the user's progress and milestones.",
+          "properties": {
+            "learningPath": {
+              "type": "string",
+              "enum": [
+                "Novice",
+                "Explorer",
+                "Specialist",
+                "Master",
+                "Guru"
+              ]
+            },
+            "milestones": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "streaks": {
+          "type": "object",
+          "description": "Tracks the user's engagement streak.",
+          "properties": {
+            "currentStreak": {
+              "type": "number"
+            },
+            "longestStreak": {
+              "type": "number"
+            },
+            "lastLoginDate": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "rewards": {
+          "type": "object",
+          "description": "Tracks unlocked rewards for the user.",
+          "properties": {
+            "unlockedThemes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "unlockedAvatars": {
               "type": "array",
               "items": {
                 "type": "string"
