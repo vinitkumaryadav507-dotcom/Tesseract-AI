@@ -10,9 +10,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['"PT Sans"', 'sans-serif'],
+        body: ['"Lora"', 'serif'],
         headline: ['"Poppins"', 'sans-serif'],
         code: ['monospace'],
+        comic: ['"Comic Neue"', 'cursive'],
       },
       colors: {
         background: 'hsl(var(--background))',

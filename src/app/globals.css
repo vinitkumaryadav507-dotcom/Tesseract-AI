@@ -57,6 +57,37 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  .dark.theme-cosmic {
+    --background: 250 80% 5%; /* Deep indigo */
+    --foreground: 250 20% 85%; /* Soft lavender */
+    --card: 250 50% 10%; /* Darker indigo */
+    --card-foreground: 250 20% 85%;
+    --popover: 250 50% 8%;
+    --popover-foreground: 250 20% 85%;
+    --primary: 330 100% 80%; /* Neon pink */
+    --primary-foreground: 250 80% 5%;
+    --secondary: 250 40% 15%; /* Muted indigo */
+    --secondary-foreground: 330 100% 80%;
+    --muted: 250 30% 20%;
+    --muted-foreground: 250 20% 60%;
+    --accent: 190 100% 60%; /* Glowing cyan */
+    --accent-foreground: 250 80% 5%;
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 250 40% 25%;
+    --input: 250 40% 25%;
+    --ring: 190 100% 60%;
+
+    --sidebar-background: 250 60% 8%;
+    --sidebar-foreground: 250 20% 70%;
+    --sidebar-primary: 190 100% 60%;
+    --sidebar-primary-foreground: 250 80% 5%;
+    --sidebar-accent: 330 100% 80%;
+    --sidebar-accent-foreground: 250 80% 5%;
+    --sidebar-border: 250 50% 15%;
+    --sidebar-ring: 190 100% 60%;
+  }
 }
 
 @layer base {
