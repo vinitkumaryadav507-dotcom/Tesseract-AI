@@ -16,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -26,47 +26,33 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
+  const { user, isUserLoading } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+  useEffect(() => {
+    if (!isUserLoading && user) {
+        toast({
+            title: 'Sign In Successful',
+            description: 'Welcome back!',
+        });
+        router.push('/chat');
+    }
+  }, [user, isUserLoading, router, toast]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // We don't await this, the onAuthStateChanged listener will redirect
       initiateEmailSignIn(auth, values.email, values.password);
       
-      // Give time for auth state to change
       setTimeout(() => {
-        if (auth.currentUser) {
-          toast({
-            title: 'Sign In Successful',
-            description: 'Welcome back!',
-          });
-          router.push('/chat');
-        } else {
-          // This part might be tricky because of the non-blocking nature.
-          // A listener in a layout is a better way to handle redirects.
-          // For now, we'll assume a slight delay works for the happy path.
-          // A proper implementation would use a global state listener.
-          // We will show error after a timeout if auth state is not changed.
-            setTimeout(() => {
-                toast({
-                    variant: 'destructive',
-                    title: 'Sign In Failed',
-                    description: 'Invalid credentials. Please try again.',
-                });
-                setIsLoading(false);
-            }, 2000);
-        }
-      }, 1500);
+        setIsLoading(false);
+        toast({
+            variant: 'destructive',
+            title: 'Sign In Failed',
+            description: 'Invalid credentials. Please try again.',
+        });
+      }, 3000);
 
     } catch (error: any) {
       console.error(error);

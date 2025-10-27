@@ -17,8 +17,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { updateProfile } from 'firebase/auth';
 
 const formSchema = z
   .object({
@@ -39,6 +40,21 @@ export default function SignUpPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        if (user && user.displayName) {
+            unsubscribe();
+            toast({
+                title: 'Account Created Successfully!',
+                description: "We've created your account for you.",
+            });
+            router.push('/chat');
+        }
+    });
+
+    return () => unsubscribe();
+  }, [auth, router, toast]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,54 +68,34 @@ export default function SignUpPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      // This is non-blocking
-      initiateEmailSignUp(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
 
-      // We need to listen for the user to be created to get the UID
-      const unsubscribe = auth.onAuthStateChanged(user => {
-        if (user) {
-          unsubscribe(); // Stop listening
-          
-          const userProfile = {
-            id: user.uid,
-            displayName: values.username,
-            email: values.email,
-            isGuest: false,
-          };
+      if (user) {
+        await updateProfile(user, { displayName: values.username });
 
-          const userDocRef = doc(firestore, 'users', user.uid);
-          setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+        const userProfile = {
+          id: user.uid,
+          isGuest: false,
+          personal: {
+            name: values.username,
+          },
+          // Add other default fields from your User entity schema
+        };
 
-          toast({
-            title: 'Account Created Successfully!',
-            description: "We've created your account for you.",
-          });
-          
-          router.push('/chat');
-        }
-      });
-
-      // Show an error if user isn't created after a delay
-      setTimeout(() => {
-        if (!auth.currentUser) {
-            setIsLoading(false);
-            toast({
-                variant: 'destructive',
-                title: 'Sign Up Failed',
-                description: 'Could not create account. The email might be in use.',
-            });
-            unsubscribe(); // Clean up listener
-        }
-      }, 3000);
-
-    } catch (error) {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+        // The useEffect will handle the redirect
+      }
+      
+    } catch (error: any) {
       console.error(error);
+      setIsLoading(false);
       toast({
         variant: 'destructive',
         title: 'Sign Up Failed',
-        description: 'An unexpected error occurred. Please try again.',
+        description: error.message || 'Could not create account. The email might be in use.',
       });
-      setIsLoading(false);
     }
   }
 
