@@ -37,38 +37,54 @@ export default function ChatPage() {
       createdAt: new Date().toISOString(),
       messages: [],
     };
-    setChats([newChat, ...existingChats]);
+    const updatedChats = [newChat, ...existingChats];
+    setChats(updatedChats);
     setActiveChatId(newChat.id);
+    return updatedChats;
   }, []);
 
   useEffect(() => {
     if (isInitialLoadComplete) return;
+
+    let loadedChats: ChatSession[] = [];
     try {
       const savedChats = localStorage.getItem('tesseract-chats');
-      const parsedChats = savedChats ? JSON.parse(savedChats) : [];
-      handleNewChat(parsedChats);
+      if (savedChats) {
+        loadedChats = JSON.parse(savedChats);
+      }
     } catch (error) {
       console.error("Failed to load chats:", error);
       toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Starting a new session." });
-      handleNewChat([]);
-    } finally {
-        setIsInitialLoadComplete(true);
     }
-  }, [handleNewChat, toast, isInitialLoadComplete]);
+    
+    handleNewChat(loadedChats);
+    setIsInitialLoadComplete(true);
+
+  // The dependency array is intentionally left empty. 
+  // We want this effect to run exactly once on component mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isInitialLoadComplete) return;
-    if (chats.length > 0) {
-      try {
-        localStorage.setItem('tesseract-chats', JSON.stringify(chats));
-      } catch (error) {
-        console.error("Failed to save chats:", error);
-        toast({ variant: "destructive", title: "Error", description: "Could not save chat history." });
+    try {
+      // Don't save if there's only one empty "New Chat"
+      if (chats.length === 1 && chats[0].messages.length === 0) {
+        localStorage.removeItem('tesseract-chats');
+        return;
       }
-    } else if (localStorage.getItem('tesseract-chats')) {
-      localStorage.removeItem('tesseract-chats');
+      
+      const chatsToSave = chats.filter(c => c.messages.length > 0 || c.title !== 'New Chat');
+      if (chatsToSave.length > 0) {
+        localStorage.setItem('tesseract-chats', JSON.stringify(chatsToSave));
+      } else {
+        localStorage.removeItem('tesseract-chats');
+      }
+    } catch (error) {
+      console.error("Failed to save chats:", error);
+      toast({ variant: "destructive", title: "Error", description: "Could not save chat history." });
     }
-  }, [chats, toast, isInitialLoadComplete]);
+  }, [chats, isInitialLoadComplete, toast]);
   
   useEffect(() => {
     if (scrollRef.current) {
@@ -84,7 +100,8 @@ export default function ChatPage() {
         if (remainingChats.length > 0) {
           setActiveChatId(remainingChats[0].id);
         } else {
-          setActiveChatId(null); 
+          // If all chats are deleted, create a new one
+          handleNewChat([]);
         }
       }
       return remainingChats;
@@ -92,15 +109,8 @@ export default function ChatPage() {
   };
 
   const handleClearAllChats = () => {
-    setChats([]);
-    setActiveChatId(null);
+    handleNewChat([]);
   };
-
-  useEffect(() => {
-    if (isInitialLoadComplete && chats.length === 0 && activeChatId === null) {
-      handleNewChat([]);
-    }
-  }, [chats, activeChatId, handleNewChat, isInitialLoadComplete]);
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -275,5 +285,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
