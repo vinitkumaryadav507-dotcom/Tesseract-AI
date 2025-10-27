@@ -1,16 +1,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-
-export const ChatInputSchema = z.object({
-  history: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    content: z.string(),
-  })),
-  message: z.string(),
-});
-export type ChatInput = z.infer<typeof ChatInputSchema>;
+import { ChatInputSchema, type ChatInput } from '@/lib/types';
 
 export async function chat(input: ChatInput): Promise<string> {
   const systemPrompt = `You are Tesseract AI, a friendly, calm, and helpful AI assistant created by Vinit Kumar Yadav, a talented developer from Bihar.
