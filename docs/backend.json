@@ -12,7 +12,7 @@
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the User entity. (Relationship: User 1:N ChatSession)"
+          "description": "Reference to the User entity."
         },
         "title": {
           "type": "string",
@@ -27,7 +27,17 @@
           "type": "array",
           "description": "The messages exchanged during the chat session",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["user", "model"]
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "required": ["role", "content"]
           }
         }
       },
@@ -35,42 +45,119 @@
         "id",
         "userId",
         "title",
-        "createdAt",
-        "messages"
+        "createdAt"
       ]
     },
     "User": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the AI chatbot application.",
+      "description": "Represents a user of the AI chatbot application, including personalization data.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the user."
         },
-        "displayName": {
-          "type": "string",
-          "description": "The user's display name."
-        },
-        "preferredLanguage": {
-          "type": "string",
-          "description": "The user's preferred language.",
-          "format": "string"
-        },
-        "profilePic": {
-          "type": "string",
-          "description": "A URL referencing a preset image.",
-          "format": "uri"
-        },
         "isGuest": {
           "type": "boolean",
           "description": "Flag indicating a guest user."
+        },
+        "personal": {
+          "type": "object",
+          "description": "Personal information about the user.",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "pronouns": {
+              "type": "string"
+            },
+            "occupation": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "birthday": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "preferences": {
+          "type": "object",
+          "description": "User's explicit and inferred preferences.",
+          "properties": {
+            "communicationStyle": {
+              "type": "string",
+              "enum": ["formal", "casual", "direct", "story-telling"]
+            },
+            "topicsOfInterest": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "petPeeves": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "lifeContext": {
+          "type": "object",
+          "description": "Information about the user's current situation.",
+          "properties": {
+            "currentProjects": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "importantRelationships": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ongoingChallenges": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "historical": {
+          "type": "object",
+          "description": "Historical data about the user's interactions.",
+          "properties": {
+            "keyMomentsShared": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pastDecisions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "emotionalPatterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       },
       "required": [
         "id",
-        "displayName"
+        "isGuest"
       ]
     }
   },
