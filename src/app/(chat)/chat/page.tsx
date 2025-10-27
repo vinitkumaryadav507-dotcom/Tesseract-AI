@@ -184,14 +184,14 @@ export default function ChatPage() {
   
     const userMessage: Message = { role: 'user', content: input };
     const updatedMessages = [...currentChat.messages, userMessage];
-    
+  
     setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: updatedMessages } : c));
     const currentInput = input;
     setInput('');
     setIsLoading(true);
   
     try {
-      // Auto-name chat in parallel if it's the first message
+      // Auto-name chat if it's the first message and not anonymous
       if (currentChat.messages.length === 0 && !user?.isAnonymous) {
         autoNameChat(currentInput)
           .then(newTitle => {
@@ -199,7 +199,7 @@ export default function ChatPage() {
           })
           .catch(err => {
             console.error("Error auto-naming chat:", err);
-            // This is a non-critical error, so we just log it.
+            // Non-critical, so we just log it
           });
       }
   
@@ -211,7 +211,6 @@ export default function ChatPage() {
       const modelMessage: Message = { role: 'model', content: aiResponse };
       setChats(prev => prev.map(c => {
         if (c.id === currentChatId) {
-          // Make sure to add the new model message to the already updated user message list
           return { ...c, messages: [...updatedMessages, modelMessage] };
         }
         return c;
@@ -224,7 +223,6 @@ export default function ChatPage() {
       
       setChats(prev => prev.map(c => {
         if (c.id === currentChatId) {
-          // Add error message to the conversation
           return { ...c, messages: [...updatedMessages, errorMessage] };
         }
         return c;
