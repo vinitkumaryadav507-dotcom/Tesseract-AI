@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Plus, History, Trash2, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,7 +110,16 @@ export default function ChatPage() {
   };
 
   const handleClearAllChats = () => {
+    setChats([]);
+    setActiveChatId(null);
+    localStorage.removeItem('tesseract-chats');
     handleNewChat([]);
+  };
+
+  const handleTitleClick = () => {
+    setChats([]);
+    setActiveChatId(null);
+    localStorage.removeItem('tesseract-chats');
   };
 
 
@@ -171,11 +181,11 @@ export default function ChatPage() {
     <div className="flex h-dvh w-full">
       <aside className="hidden md:flex w-[280px] flex-col border-r bg-muted/20 p-2">
         <div className="flex items-center justify-between p-2">
-            <div className="flex items-center gap-2">
-                <TesseractLogo className="w-8 h-8" />
-                <h1 className="text-xl font-headline font-semibold tracking-tight">Tesseract AI</h1>
-            </div>
-            <ThemeToggle />
+          <Link href="/" onClick={handleTitleClick} className="flex items-center gap-2 group">
+            <TesseractLogo className="w-8 h-8 group-hover:animate-pulse" />
+            <h1 className="text-xl font-headline font-semibold tracking-tight group-hover:text-accent">Tesseract AI</h1>
+          </Link>
+          <ThemeToggle />
         </div>
         <Separator className="my-2" />
         <Button onClick={() => handleNewChat(chats)} className="mb-2">
@@ -226,7 +236,7 @@ export default function ChatPage() {
         <Separator className="mt-2" />
          <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="mt-2 w-full">
+            <Button variant="outline" size="sm" className="mt-2 w-full" disabled={chats.length <= 1 && chats[0]?.messages.length === 0}>
               <Trash2 className="mr-2 h-4 w-4" /> Clear History
             </Button>
           </AlertDialogTrigger>
