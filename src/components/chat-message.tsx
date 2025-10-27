@@ -37,11 +37,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
         className={cn(
           "max-w-[75%] rounded-lg border p-3.5 shadow-sm",
           isUser
-            ? "bg-primary text-primary-foreground"
+            ? "bg-accent text-accent-foreground"
             : "bg-card"
         )}
       >
-        <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-p:my-0">
+        <div className="prose prose-sm dark:prose-invert max-w-none text-current prose-p:my-0">
           {isUser ? (
             <p className="whitespace-pre-wrap">{content}</p>
           ) : (
