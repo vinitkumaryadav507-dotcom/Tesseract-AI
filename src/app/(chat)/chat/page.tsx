@@ -91,7 +91,12 @@ export default function ChatPage() {
       toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Starting a new session." });
     }
     
-    handleNewChat(loadedChats);
+    if (loadedChats.length === 0) {
+      handleNewChat([]);
+    } else {
+      setChats(loadedChats);
+      setActiveChatId(loadedChats[0].id);
+    }
     setIsInitialLoadComplete(true);
 
   }, [user, isInitialLoadComplete, handleNewChat, getStorageKey, toast]);
@@ -133,6 +138,7 @@ export default function ChatPage() {
         if (remainingChats.length > 0) {
           setActiveChatId(remainingChats[0].id);
         } else {
+          setActiveChatId(null);
           handleNewChat([]);
         }
       }
@@ -185,15 +191,15 @@ export default function ChatPage() {
     setInput('');
     setIsLoading(true);
 
-    if (currentChat.messages.length === 0 && !user?.isAnonymous) {
-      autoNameChat(currentInput)
-        .then(newTitle => {
-          setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: newTitle } : c));
-        })
-        .catch(err => console.error("Error auto-naming chat:", err));
-    }
-
     try {
+      if (currentChat.messages.length === 0 && !user?.isAnonymous) {
+        autoNameChat(currentInput)
+          .then(newTitle => {
+            setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: newTitle } : c));
+          })
+          .catch(err => console.error("Error auto-naming chat:", err));
+      }
+
       const aiResponse = await chat({
         history: currentChat.messages.map(m => ({ role: m.role, content: m.content })),
         message: currentInput,
