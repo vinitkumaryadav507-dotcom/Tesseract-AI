@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "ChatSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatSession",
+      "type": "object",
+      "description": "Represents a single chat session between the user and the AI chatbot.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the chat session."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User entity. (Relationship: User 1:N ChatSession)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the chat session, automatically generated based on the topic."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the chat session was created.",
+          "format": "date-time"
+        },
+        "messages": {
+          "type": "array",
+          "description": "The messages exchanged during the chat session",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "createdAt",
+        "messages"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the AI chatbot application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "The user's preferred language.",
+          "format": "string"
+        },
+        "profilePic": {
+          "type": "string",
+          "description": "A URL referencing a preset image.",
+          "format": "uri"
+        },
+        "isGuest": {
+          "type": "boolean",
+          "description": "Flag indicating a guest user."
+        }
+      },
+      "required": [
+        "id",
+        "displayName"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Uses path-based ownership for security.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/chat_sessions/{chatSessionId}",
+        "definition": {
+          "entityName": "ChatSession",
+          "schema": {
+            "$ref": "#/backend/entities/ChatSession"
+          },
+          "description": "Stores chat sessions owned by a specific user. Inherits path-based ownership from the /users/{userId} collection.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "chatSessionId",
+              "description": "The unique identifier for the chat session."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to manage user data, chat sessions, and application-related configurations for the chatbot application. The core principle is Authorization Independence, achieved through path-based ownership and denormalization. This eliminates the need for `get()` calls in security rules, making them simpler, more robust, and easier to debug. The structure also facilitates secure `list` operations. Path-based ownership is implemented for user-specific data like profiles and chat sessions, while global roles are managed through existence checks in dedicated collections.\n\n1.  **/users/{userId}**: Stores user profile information. This uses path-based ownership, ensuring that only the authenticated user can access their own profile data.\n\n2.  **/users/{userId}/chat_sessions/{chatSessionId}**: Stores individual chat sessions for each user. It inherits path-based ownership from the parent `/users/{userId}` collection. This ensures that only the user who owns the chat session can access it. The `userId` is denormalized into each chat session document, although implicitly through the path.\n\n\nThis design supports the required QAPs by:\n\n*   **Authorization Independence:** Achieved by avoiding `get()` calls in security rules. Path-based ownership ensures that access control can be determined solely based on the path and the `request.auth.uid`.\n*   **Secure List Operations:** The segregated structure, with user-owned data under `/users/{userId}`, allows for secure `list` operations that only return the resources owned by the authenticated user."
+  }
+}
