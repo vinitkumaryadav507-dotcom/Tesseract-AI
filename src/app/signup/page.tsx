@@ -108,7 +108,9 @@ export default function SignUpPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <TesseractLogo className="w-20 h-20" />
+            <Link href="/">
+              <TesseractLogo className="w-20 h-20" />
+            </Link>
           </div>
           <CardTitle className="text-2xl font-headline">CREATE AN ACCOUNT</CardTitle>
           <CardDescription>Enter your details to get started.</CardDescription>
