@@ -84,7 +84,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <TesseractLogo className="w-20 h-20" />
+            <Link href="/">
+              <TesseractLogo className="w-20 h-20" />
+            </Link>
           </div>
           <CardTitle className="text-2xl font-headline">SIGN IN</CardTitle>
           <CardDescription>Enter your credentials to access your account.</CardDescription>
