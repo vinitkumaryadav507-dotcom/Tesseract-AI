@@ -30,17 +30,23 @@ export default function WelcomePage() {
               Start Chatting
             </Link>
           </Button>
-          <Button variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2" disabled>
-            <Lightbulb className="w-8 h-8" />
-            Explore Topics
+          <Button asChild variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2">
+            <Link href="/chat">
+              <Lightbulb className="w-8 h-8" />
+              Explore Topics
+            </Link>
           </Button>
-           <Button variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2" disabled>
-            <Settings className="w-8 h-8" />
-            Personalize
+           <Button asChild variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2">
+            <Link href="/chat">
+              <Settings className="w-8 h-8" />
+              Personalize
+            </Link>
           </Button>
-           <Button variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2" disabled>
-            <HelpCircle className="w-8 h-8" />
-            Help & Tutorial
+           <Button asChild variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2">
+            <Link href="/chat">
+              <HelpCircle className="w-8 h-8" />
+              Help & Tutorial
+            </Link>
           </Button>
         </div>
         <p className="text-sm text-muted-foreground mt-6">
