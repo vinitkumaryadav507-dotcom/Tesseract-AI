@@ -174,49 +174,68 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading || !activeChatId) return;
-    
-    const currentChat = activeChat;
+  
+    const currentChatId = activeChatId;
+    const currentChat = chats.find(c => c.id === currentChatId);
     if (!currentChat) {
-      console.error("handleSendMessage called with no active chat. This should not happen.");
       toast({ variant: "destructive", title: "Application Error", description: "No active chat session. Please refresh." });
       return;
     }
-    const currentChatId = activeChatId;
-
+  
     const userMessage: Message = { role: 'user', content: input };
     const updatedMessages = [...currentChat.messages, userMessage];
-
+    
     setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: updatedMessages } : c));
     const currentInput = input;
     setInput('');
     setIsLoading(true);
-
+  
     try {
+      // Auto-name chat in parallel if it's the first message
       if (currentChat.messages.length === 0 && !user?.isAnonymous) {
         autoNameChat(currentInput)
           .then(newTitle => {
             setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: newTitle } : c));
           })
-          .catch(err => console.error("Error auto-naming chat:", err));
+          .catch(err => {
+            console.error("Error auto-naming chat:", err);
+            // This is a non-critical error, so we just log it.
+          });
       }
-
+  
       const aiResponse = await chat({
         history: currentChat.messages.map(m => ({ role: m.role, content: m.content })),
         message: currentInput,
       });
+  
       const modelMessage: Message = { role: 'model', content: aiResponse };
-      setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: [...updatedMessages, modelMessage] } : c));
+      setChats(prev => prev.map(c => {
+        if (c.id === currentChatId) {
+          // Make sure to add the new model message to the already updated user message list
+          return { ...c, messages: [...updatedMessages, modelMessage] };
+        }
+        return c;
+      }));
+  
     } catch (error) {
       console.error("Error with AI chat:", error);
       const errorMessageContent = error instanceof Error ? error.message : "Sorry, I ran into an error. Please try again.";
-      toast({ variant: "destructive", title: "Error", description: "Failed to get AI response." });
       const errorMessage: Message = { role: 'model', content: errorMessageContent };
-      setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: [...updatedMessages, errorMessage] } : c));
+      
+      setChats(prev => prev.map(c => {
+        if (c.id === currentChatId) {
+          // Add error message to the conversation
+          return { ...c, messages: [...updatedMessages, errorMessage] };
+        }
+        return c;
+      }));
+      
+      toast({ variant: "destructive", title: "Error", description: "Failed to get AI response." });
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   if (isUserLoading || !isInitialLoadComplete) {
     return (
         <div className="flex h-dvh w-full items-center justify-center">
@@ -353,5 +372,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
