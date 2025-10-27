@@ -174,63 +174,72 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading || !activeChatId) return;
-  
+
     const currentChatId = activeChatId;
+    const currentInput = input;
+    const userMessage: Message = { role: 'user', content: currentInput };
+
     const currentChat = chats.find(c => c.id === currentChatId);
     if (!currentChat) {
-      toast({ variant: "destructive", title: "Application Error", description: "No active chat session. Please refresh." });
-      return;
+        toast({ variant: "destructive", title: "Application Error", description: "No active chat session. Please refresh." });
+        return;
     }
-  
-    const userMessage: Message = { role: 'user', content: input };
-    const updatedMessages = [...currentChat.messages, userMessage];
-  
-    setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: updatedMessages } : c));
-    const currentInput = input;
+    
+    const historyForAPI = currentChat.messages.map(m => ({ role: m.role, content: m.content }));
+    const isFirstMessage = currentChat.messages.length === 0;
+
+    // Optimistically update UI with user's message
+    setChats(prev =>
+        prev.map(c =>
+            c.id === currentChatId
+                ? { ...c, messages: [...c.messages, userMessage] }
+                : c
+        )
+    );
     setInput('');
     setIsLoading(true);
-  
+
     try {
-      // Auto-name chat if it's the first message and not anonymous
-      if (currentChat.messages.length === 0 && !user?.isAnonymous) {
-        autoNameChat(currentInput)
-          .then(newTitle => {
-            setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: newTitle } : c));
-          })
-          .catch(err => {
-            console.error("Error auto-naming chat:", err);
-            // Non-critical, so we just log it
-          });
-      }
-  
-      const aiResponse = await chat({
-        history: currentChat.messages.map(m => ({ role: m.role, content: m.content })),
-        message: currentInput,
-      });
-  
-      const modelMessage: Message = { role: 'model', content: aiResponse };
-      setChats(prev => prev.map(c => {
-        if (c.id === currentChatId) {
-          return { ...c, messages: [...updatedMessages, modelMessage] };
+        const chatPromise = chat({ history: historyForAPI, message: currentInput });
+        
+        let titlePromise: Promise<string>;
+        if (isFirstMessage && !user?.isAnonymous) {
+            titlePromise = autoNameChat(currentInput);
+        } else {
+            titlePromise = Promise.resolve(currentChat.title);
         }
-        return c;
-      }));
-  
+        
+        const [aiResponse, newTitle] = await Promise.all([chatPromise, titlePromise]);
+
+        const modelMessage: Message = { role: 'model', content: aiResponse };
+
+        setChats(prev =>
+            prev.map(c =>
+                c.id === currentChatId
+                    ? { ...c, title: newTitle, messages: [...c.messages, modelMessage] }
+                    : c
+            )
+        );
+
     } catch (error) {
-      console.error("Error with AI chat:", error);
-      const errorMessageContent = error instanceof Error ? error.message : "Sorry, I ran into an error. Please try again.";
-      const errorMessage: Message = { role: 'model', content: errorMessageContent };
+        console.error("Error with AI chat:", error);
+        const errorMessageContent = error instanceof Error ? error.message : "Sorry, I ran into an error. Please try again.";
+        const errorMessage: Message = { role: 'model', content: errorMessageContent };
       
-      setChats(prev => prev.map(c => {
-        if (c.id === currentChatId) {
-          return { ...c, messages: [...updatedMessages, errorMessage] };
-        }
-        return c;
-      }));
+        setChats(prev =>
+            prev.map(c => {
+                if (c.id === currentChatId) {
+                    // Find the user message that was just added and remove it before adding the error
+                    const newMessages = c.messages.filter(m => m.role !== 'user' || m.content !== currentInput);
+                    return { ...c, messages: [...newMessages, userMessage, errorMessage] };
+                }
+                return c;
+            })
+        );
       
-      toast({ variant: "destructive", title: "Error", description: "Failed to get AI response." });
+        toast({ variant: "destructive", title: "Error", description: "Failed to get AI response." });
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
   
@@ -370,3 +379,4 @@ export default function ChatPage() {
     </div>
   );
 }
+
