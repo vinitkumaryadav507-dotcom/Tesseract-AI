@@ -2,11 +2,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
-import { Bot, HelpCircle } from 'lucide-react';
+import { User, UserPlus, LogIn } from 'lucide-react';
 
 export default function WelcomePage() {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-white p-4 text-center overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-white p-4 text-center overflow-hidden dark:bg-background">
       <div className="relative z-10 flex flex-col items-center gap-4">
         <TesseractLogo className="w-32 h-32" />
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
@@ -22,17 +22,23 @@ export default function WelcomePage() {
         </p>
         <p className="text-muted-foreground">Get started by choosing an option below.</p>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 w-full max-w-lg">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2 w-full max-w-2xl">
           <Button asChild size="lg" className="h-auto py-4 font-headline text-lg shadow-lg hover:shadow-accent/50 transition-shadow flex flex-col gap-2">
-            <Link href="/chat">
-              <Bot className="w-8 h-8" />
-              Start Chatting
+            <Link href="/login">
+              <LogIn className="w-8 h-8" />
+              Sign In
             </Link>
           </Button>
            <Button asChild variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2">
-            <Link href="/help">
-              <HelpCircle className="w-8 h-8" />
-              Help & Tutorial
+            <Link href="/signup">
+              <UserPlus className="w-8 h-8" />
+              Sign Up
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2" href="/chat">
+             <Link href="/chat?guest=true">
+                <User className="w-8 h-8" />
+                Continue as Guest
             </Link>
           </Button>
         </div>

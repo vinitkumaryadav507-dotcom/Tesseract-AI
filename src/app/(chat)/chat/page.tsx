@@ -2,9 +2,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Plus, History, Trash2, Loader2 } from 'lucide-react';
+import { Send, Plus, History, Trash2, Loader2, LogOut } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth, useUser } from '@/firebase';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +17,12 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { ChatMessage } from '@/components/chat-message';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import type { Message, ChatSession } from '@/lib/types';
 import { chat } from '@/ai/flows/chat';
 import { autoNameChat } from '@/ai/flows/auto-name-chat';
-import { useToast } from '@/hooks/use-toast';
+import { User as UserIcon } from 'lucide-react';
 
 export default function ChatPage() {
   const [chats, setChats] = useState<ChatSession[]>([]);
@@ -27,9 +31,35 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   
   const activeChat = chats.find(c => c.id === activeChatId);
+  
+  // Handle Guest Login
+  useEffect(() => {
+    const isGuest = searchParams.get('guest');
+    if (isGuest && !user && !isUserLoading) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [searchParams, user, isUserLoading, auth]);
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!isUserLoading && !user && !searchParams.get('guest')) {
+      router.push('/');
+    }
+  }, [isUserLoading, user, router, searchParams]);
+
+
+  const getStorageKey = useCallback(() => {
+    if (!user) return null;
+    return `tesseract-chats-${user.uid}`;
+  }, [user]);
 
   const handleNewChat = useCallback((existingChats: ChatSession[] = []) => {
     const newChat: ChatSession = {
@@ -45,11 +75,14 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (isInitialLoadComplete) return;
+    if (!user || isInitialLoadComplete) return;
+
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
 
     let loadedChats: ChatSession[] = [];
     try {
-      const savedChats = localStorage.getItem('tesseract-chats');
+      const savedChats = localStorage.getItem(storageKey);
       if (savedChats) {
         loadedChats = JSON.parse(savedChats);
       }
@@ -61,31 +94,30 @@ export default function ChatPage() {
     handleNewChat(loadedChats);
     setIsInitialLoadComplete(true);
 
-  // The dependency array is intentionally left empty. 
-  // We want this effect to run exactly once on component mount.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, isInitialLoadComplete, handleNewChat, getStorageKey, toast]);
 
   useEffect(() => {
-    if (!isInitialLoadComplete) return;
+    if (!isInitialLoadComplete || !user) return;
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     try {
-      // Don't save if there's only one empty "New Chat"
-      if (chats.length === 1 && chats[0].messages.length === 0) {
-        localStorage.removeItem('tesseract-chats');
+      if (chats.length === 0) {
+        localStorage.removeItem(storageKey);
         return;
       }
       
       const chatsToSave = chats.filter(c => c.messages.length > 0 || c.title !== 'New Chat');
       if (chatsToSave.length > 0) {
-        localStorage.setItem('tesseract-chats', JSON.stringify(chatsToSave));
+        localStorage.setItem(storageKey, JSON.stringify(chatsToSave));
       } else {
-        localStorage.removeItem('tesseract-chats');
+        localStorage.removeItem(storageKey);
       }
     } catch (error) {
       console.error("Failed to save chats:", error);
       toast({ variant: "destructive", title: "Error", description: "Could not save chat history." });
     }
-  }, [chats, isInitialLoadComplete, toast]);
+  }, [chats, isInitialLoadComplete, user, getStorageKey, toast]);
   
   useEffect(() => {
     if (scrollRef.current) {
@@ -101,7 +133,6 @@ export default function ChatPage() {
         if (remainingChats.length > 0) {
           setActiveChatId(remainingChats[0].id);
         } else {
-          // If all chats are deleted, create a new one
           handleNewChat([]);
         }
       }
@@ -112,16 +143,27 @@ export default function ChatPage() {
   const handleClearAllChats = () => {
     setChats([]);
     setActiveChatId(null);
-    localStorage.removeItem('tesseract-chats');
+    const storageKey = getStorageKey();
+    if (storageKey) {
+        localStorage.removeItem(storageKey);
+    }
     handleNewChat([]);
   };
 
   const handleTitleClick = () => {
+    const storageKey = getStorageKey();
+    if(storageKey) {
+        localStorage.removeItem(storageKey);
+    }
     setChats([]);
     setActiveChatId(null);
-    localStorage.removeItem('tesseract-chats');
   };
-
+  
+  const handleSignOut = async () => {
+    await auth.signOut();
+    handleTitleClick(); // clear local state
+    router.push('/');
+  }
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +185,7 @@ export default function ChatPage() {
     setInput('');
     setIsLoading(true);
 
-    if (currentChat.messages.length === 0) {
+    if (currentChat.messages.length === 0 && !user?.isAnonymous) {
       autoNameChat(currentInput)
         .then(newTitle => {
           setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, title: newTitle } : c));
@@ -169,7 +211,7 @@ export default function ChatPage() {
     }
   };
 
-  if (!isInitialLoadComplete) {
+  if (isUserLoading || !isInitialLoadComplete) {
     return (
         <div className="flex h-dvh w-full items-center justify-center">
             <Loader2 className="h-10 w-10 animate-spin" />
@@ -234,25 +276,30 @@ export default function ChatPage() {
           </div>
         </ScrollArea>
         <Separator className="mt-2" />
-         <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" size="sm" className="mt-2 w-full" disabled={chats.length <= 1 && chats[0]?.messages.length === 0}>
-              <Trash2 className="mr-2 h-4 w-4" /> Clear History
+        <div className="space-y-2 mt-2">
+            <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full" disabled={chats.length === 0 || (chats.length === 1 && chats[0]?.messages.length === 0)}>
+                <Trash2 className="mr-2 h-4 w-4" /> Clear History
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action will permanently delete all chat history. This action cannot be undone.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearAllChats}>Confirm</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+            </AlertDialog>
+            <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" /> Sign Out
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action will permanently delete all chat history. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleClearAllChats}>Confirm</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col h-dvh">
@@ -261,10 +308,10 @@ export default function ChatPage() {
             {!activeChat || activeChat.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[60vh] text-center">
                 <TesseractLogo className="w-20 h-20 mb-4" />
-                <h2 className="text-3xl font-headline font-semibold">How can I help you today?</h2>
+                <h2 className="text-3xl font-headline font-semibold">How can I help you today, {user?.isAnonymous ? 'Guest' : user?.displayName || 'there'}?</h2>
               </div>
             ) : (
-              activeChat.messages.map((m, i) => <ChatMessage key={`${activeChat.id}-${i}`} message={m} />)
+              activeChat.messages.map((m, i) => <ChatMessage key={`${activeChat.id}-${i}`} message={m} user={user} />)
             )}
             {isLoading && <div className="flex items-start gap-4">
               <Avatar className="w-9 h-9 border">
@@ -295,3 +342,4 @@ export default function ChatPage() {
     </div>
   );
 }
+

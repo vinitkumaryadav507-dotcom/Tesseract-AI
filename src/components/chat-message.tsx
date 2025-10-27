@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Bot, User, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
@@ -9,12 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/lib/types";
 import { TesseractLogo } from "./ui/tesseract-logo";
+import type { User as FirebaseUser } from "firebase/auth";
 
 interface ChatMessageProps {
   message: Message;
+  user: FirebaseUser | null;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, user }: ChatMessageProps) {
   const { toast } = useToast();
   const { role, content } = message;
   const isUser = role === 'user';
@@ -25,6 +28,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
       description: "Copied to clipboard!",
     });
   };
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "G";
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  }
 
   return (
     <div className={cn("flex items-start gap-4", isUser && "justify-end")}>
@@ -71,7 +79,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
       {isUser && (
         <Avatar className="w-9 h-9">
           <AvatarFallback>
-            <User className="w-5 h-5" />
+            {user?.isAnonymous || !user?.displayName ? (
+                <User className="w-5 h-5" />
+            ) : (
+                getInitials(user.displayName)
+            )}
           </AvatarFallback>
         </Avatar>
       )}
