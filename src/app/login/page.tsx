@@ -17,18 +17,26 @@ import { Input } from '@/components/ui/input';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
 import { Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const auth = useAuth();
-  const { user, isUserLoading } = useAuth();
+  const { user, isUserLoading } = auth ? useAuth() : { user: null, isUserLoading: true };
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -45,13 +53,19 @@ export default function LoginPage() {
     try {
       initiateEmailSignIn(auth, values.email, values.password);
       
+      // This timeout is a temporary way to handle the non-blocking sign-in.
+      // In a real app, you'd listen for onAuthStateChanged to confirm success/failure.
       setTimeout(() => {
         setIsLoading(false);
-        toast({
-            variant: 'destructive',
-            title: 'Sign In Failed',
-            description: 'Invalid credentials. Please try again.',
-        });
+        // We can't be sure it's an invalid credential here without more complex state management
+        // This is a placeholder for user feedback.
+        if (!auth.currentUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Sign In Failed',
+                description: 'Invalid credentials or network issue. Please try again.',
+            });
+        }
       }, 3000);
 
     } catch (error: any) {
@@ -122,4 +136,12 @@ export default function LoginPage() {
       </Card>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return (
+    <FirebaseClientProvider>
+      <LoginPageContent />
+    </FirebaseClientProvider>
+  )
 }

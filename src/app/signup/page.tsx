@@ -7,8 +7,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth, useFirestore } from '@/firebase';
-import { initiateEmailSignUp } from '@/firebase/non-blocking-login';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import { doc } from 'firebase/firestore';
 
@@ -19,7 +17,9 @@ import { Input } from '@/components/ui/input';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { setDoc } from 'firebase/firestore';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 const formSchema = z
   .object({
@@ -33,7 +33,7 @@ const formSchema = z
     path: ['confirmPassword'],
   });
 
-export default function SignUpPage() {
+function SignUpPageContent() {
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -41,6 +41,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
         if (user && user.displayName) {
             unsubscribe();
@@ -84,8 +85,8 @@ export default function SignUpPage() {
         };
 
         const userDocRef = doc(firestore, 'users', user.uid);
-        setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
-        // The useEffect will handle the redirect
+        await setDoc(userDocRef, userProfile, { merge: true });
+        // The useEffect will handle the redirect after profile update is confirmed by auth state change
       }
       
     } catch (error: any) {
@@ -182,4 +183,13 @@ export default function SignUpPage() {
       </Card>
     </div>
   );
+}
+
+
+export default function SignUpPage() {
+  return (
+    <FirebaseClientProvider>
+      <SignUpPageContent />
+    </FirebaseClientProvider>
+  )
 }
