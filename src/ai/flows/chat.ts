@@ -1,7 +1,7 @@
 'use server';
 
 import { ai } from '@/ai/genkit';
-import { ChatInputSchema, type ChatInput } from '@/lib/types';
+import type { ChatInput } from '@/lib/types';
 
 export async function chat(input: ChatInput): Promise<string> {
   const systemPrompt = `You are Tesseract AI, a friendly, calm, and helpful AI assistant created by Vinit Kumar Yadav, a talented developer from Bihar.
@@ -28,5 +28,5 @@ You are now in a conversation with a user. The history of the conversation is pr
     prompt: input.message,
   });
 
-  return text() || "I'm sorry, I couldn't generate a response.";
+  return text || "I'm sorry, I couldn't generate a response.";
 }
