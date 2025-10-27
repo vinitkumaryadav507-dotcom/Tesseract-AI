@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Plus, History, Trash2, Loader2, LogOut } from 'lucide-react';
+import { Send, Plus, History, Trash2, Loader2, LogOut, Settings } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -277,6 +277,11 @@ export default function ChatPage() {
         </ScrollArea>
         <Separator className="mt-2" />
         <div className="space-y-2 mt-2">
+            <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+              <Link href="/settings">
+                <Settings className="mr-2 h-4 w-4" /> Settings
+              </Link>
+            </Button>
             <AlertDialog>
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full" disabled={chats.length === 0 || (chats.length === 1 && chats[0]?.messages.length === 0)}>
@@ -289,7 +294,7 @@ export default function ChatPage() {
                 <AlertDialogDescription>
                     This action will permanently delete all chat history. This action cannot be undone.
                 </AlertDialogDescription>
-                </AlertDialogHeader>
+                </Header>
                 <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={handleClearAllChats}>Confirm</AlertDialogAction>
@@ -342,4 +347,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
