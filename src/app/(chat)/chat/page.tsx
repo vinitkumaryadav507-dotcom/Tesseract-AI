@@ -30,37 +30,27 @@ export default function ChatPage() {
   
   const activeChat = chats.find(c => c.id === activeChatId);
 
-  const handleNewChat = useCallback(() => {
+  const handleNewChat = useCallback((existingChats: ChatSession[] = []) => {
     const newChat: ChatSession = {
       id: `chat-${Date.now()}`,
       title: 'New Chat',
       createdAt: new Date().toISOString(),
       messages: [],
     };
-    setChats(prev => [newChat, ...prev]);
+    setChats([newChat, ...existingChats]);
     setActiveChatId(newChat.id);
-    return newChat.id;
   }, []);
 
   useEffect(() => {
     if (isInitialLoadComplete) return;
     try {
       const savedChats = localStorage.getItem('tesseract-chats');
-      if (savedChats) {
-        const parsedChats: ChatSession[] = JSON.parse(savedChats);
-        if (parsedChats.length > 0) {
-          setChats(parsedChats);
-          setActiveChatId(parsedChats[0].id);
-        } else {
-          handleNewChat();
-        }
-      } else {
-        handleNewChat();
-      }
+      const parsedChats = savedChats ? JSON.parse(savedChats) : [];
+      handleNewChat(parsedChats);
     } catch (error) {
       console.error("Failed to load chats:", error);
       toast({ variant: "destructive", title: "Error", description: "Could not load chat history. Starting a new session." });
-      handleNewChat();
+      handleNewChat([]);
     } finally {
         setIsInitialLoadComplete(true);
     }
@@ -94,7 +84,6 @@ export default function ChatPage() {
         if (remainingChats.length > 0) {
           setActiveChatId(remainingChats[0].id);
         } else {
-          // This will trigger the effect below to create a new chat
           setActiveChatId(null); 
         }
       }
@@ -107,10 +96,9 @@ export default function ChatPage() {
     setActiveChatId(null);
   };
 
-  // Effect to create a new chat if all are deleted.
   useEffect(() => {
     if (isInitialLoadComplete && chats.length === 0 && activeChatId === null) {
-      handleNewChat();
+      handleNewChat([]);
     }
   }, [chats, activeChatId, handleNewChat, isInitialLoadComplete]);
 
@@ -152,8 +140,9 @@ export default function ChatPage() {
       setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: [...updatedMessages, modelMessage] } : c));
     } catch (error) {
       console.error("Error with AI chat:", error);
+      const errorMessageContent = error instanceof Error ? error.message : "Sorry, I ran into an error. Please try again.";
       toast({ variant: "destructive", title: "Error", description: "Failed to get AI response." });
-      const errorMessage: Message = { role: 'model', content: 'Sorry, I ran into an error. Please try again.' };
+      const errorMessage: Message = { role: 'model', content: errorMessageContent };
       setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: [...updatedMessages, errorMessage] } : c));
     } finally {
       setIsLoading(false);
@@ -179,7 +168,7 @@ export default function ChatPage() {
             <ThemeToggle />
         </div>
         <Separator className="my-2" />
-        <Button onClick={handleNewChat} className="mb-2">
+        <Button onClick={() => handleNewChat(chats)} className="mb-2">
           <Plus className="mr-2 h-4 w-4" /> New Chat
         </Button>
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground px-2 py-1">
@@ -286,3 +275,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    

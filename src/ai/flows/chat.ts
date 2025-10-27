@@ -1,7 +1,9 @@
+
 'use server';
 
 import { ai } from '@/ai/genkit';
 import type { ChatInput } from '@/lib/types';
+import { GenerateRequest } from '@genkit-ai/google-genai';
 
 export async function chat(input: ChatInput): Promise<string> {
   const systemPrompt = `You are Tesseract AI, a friendly, calm, and helpful AI assistant created by Vinit Kumar Yadav, a talented developer from Bihar.
@@ -20,13 +22,34 @@ Your core directives:
 6.  **About Your Creator**: If asked who created you, respond with: "I was created by Vinit Kumar Yadav, a talented developer from Bihar. He is the mind behind Tesseract AI and designed me to help you with questions, guidance, and more. I’m here to assist you in any way I can!"
 
 You are now in a conversation with a user. The history of the conversation is provided below, followed by the user's latest message. Respond accordingly.`;
-
-  const { text } = await ai.generate({
+  
+  const request: GenerateRequest = {
     model: 'googleai/gemini-2.5-flash',
     system: systemPrompt,
     history: input.history,
     prompt: input.message,
-  });
+  };
 
-  return text || "I'm sorry, I couldn't generate a response.";
+  try {
+    const { text, finishReason, usage } = await ai.generate(request);
+    
+    if (finishReason !== 'stop' && finishReason !== 'other') {
+      console.warn(`[AI] The response was stopped due to: ${finishReason}`);
+      if (text) {
+        return `${text}\n\n[Note: The response was truncated because it was blocked for safety reasons or the model reached its token limit.]`;
+      }
+      return `I'm sorry, my response was blocked. This can happen if the conversation touches on sensitive topics. Please try rephrasing your message.`;
+    }
+    
+    return text || "I'm sorry, I couldn't generate a response.";
+  } catch (error) {
+    console.error(`[AI Error] Failed to generate response:`, error);
+    let errorMessage = "I'm sorry, but I encountered an unexpected error. Please try again later.";
+    if(error instanceof Error) {
+      errorMessage = `An error occurred: ${error.message}. Please check the server logs for more details.`
+    }
+    throw new Error(errorMessage);
+  }
 }
+
+    
