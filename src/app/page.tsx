@@ -6,8 +6,7 @@ import { Bot, HelpCircle } from 'lucide-react';
 
 export default function WelcomePage() {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-animated-gradient p-4 text-center overflow-hidden">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm"></div>
+    <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-white p-4 text-center overflow-hidden">
       <div className="relative z-10 flex flex-col items-center gap-4">
         <TesseractLogo className="w-32 h-32" />
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
