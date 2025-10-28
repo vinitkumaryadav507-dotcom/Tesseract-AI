@@ -23,7 +23,7 @@ export default function WelcomePage() {
         <p className="text-muted-foreground">Get started by entering the chat.</p>
         
         <div className="flex flex-col gap-4 mt-2 w-full max-w-sm">
-          <Button asChild size="lg" className="h-auto py-4 font-headline text-lg" href="/chat">
+          <Button asChild size="lg" className="h-auto py-4 font-headline text-lg">
              <Link href="/chat">
                 <MessageSquare className="w-8 h-8" />
                 Start Chatting
