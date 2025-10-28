@@ -14,6 +14,7 @@ export default {
         headline: ['"Poppins"', 'sans-serif'],
         code: ['monospace'],
         comic: ['"Comic Neue"', 'cursive'],
+        valorant: ['"Anton"', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

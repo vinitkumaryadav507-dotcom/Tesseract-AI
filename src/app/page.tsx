@@ -9,7 +9,7 @@ export default function WelcomePage() {
     <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-white p-4 text-center overflow-hidden dark:bg-background">
       <div className="relative z-10 flex flex-col items-center gap-4">
         <TesseractLogo className="w-32 h-32" />
-        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
+        <h1 className="text-5xl md:text-6xl font-valorant font-bold text-foreground tracking-wider uppercase">
           Tesseract AI
         </h1>
         <div className="max-w-2xl text-lg text-muted-foreground text-center flex flex-col gap-2">
@@ -18,7 +18,7 @@ export default function WelcomePage() {
             </p>
         </div>
         <p className="text-md text-muted-foreground">
-          Built by <span className="font-semibold animate-blink-blue">Vinit Kumar Yadav</span>.
+          Built by <span className="font-valorant text-lg tracking-wider animate-blink-blue">Vinit Kumar Yadav</span>.
         </p>
         <p className="text-muted-foreground">Get started by entering the chat.</p>
         
