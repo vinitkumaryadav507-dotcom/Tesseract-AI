@@ -1,4 +1,5 @@
 
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import React from 'react';
 
 export default function SettingsLayout({
@@ -6,5 +7,5 @@ export default function SettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <FirebaseClientProvider>{children}</FirebaseClientProvider>;
 }
