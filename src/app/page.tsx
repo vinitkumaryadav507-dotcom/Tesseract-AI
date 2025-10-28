@@ -7,17 +7,17 @@ import { User, Info, MessageSquare } from 'lucide-react';
 export default function WelcomePage() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen w-full bg-white p-4 text-center overflow-hidden dark:bg-background">
-      <div className="relative z-10 flex flex-col items-center gap-4">
+      <div className="relative z-10 flex flex-col items-center">
         <TesseractLogo className="w-32 h-32" />
-        <h1 className="text-5xl md:text-6xl font-headline font-bold text-foreground tracking-wider uppercase">
+        <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-wider uppercase mt-2">
           Tesseract AI
         </h1>
-        <div className="max-w-2xl text-lg text-muted-foreground text-center flex flex-col gap-2">
+        <div className="max-w-2xl text-lg text-muted-foreground text-center flex flex-col gap-2 mt-4">
             <p>
             Your personal AI companion for exploring ideas, getting answers, and engaging in creative conversations.
             </p>
         </div>
-        <p className="text-md text-muted-foreground">
+        <p className="text-md text-muted-foreground mt-4">
           Built by <span className="font-headline font-semibold text-lg tracking-wider animate-blink-blue">Vinit Kumar Yadav</span>.
         </p>
         <p className="text-muted-foreground">Get started by entering the chat.</p>
