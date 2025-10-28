@@ -55,20 +55,13 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16">
                     <AvatarFallback className="text-2xl">
-                      {user?.isAnonymous || !user?.displayName ? (
-                        <UserIcon className="w-8 h-8" />
-                      ) : (
-                        getInitials(user.displayName)
-                      )}
+                      <UserIcon className="w-8 h-8" />
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h3 className="text-xl font-semibold">
-                      {user?.isAnonymous ? 'Guest' : user?.displayName}
+                      Guest
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {user?.email}
-                    </p>
                   </div>
                 </div>
 

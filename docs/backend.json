@@ -225,7 +225,6 @@
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },

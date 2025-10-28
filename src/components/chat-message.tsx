@@ -28,11 +28,6 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
     });
   };
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return "G";
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-  }
-
   return (
     <div className={cn("flex items-start gap-4", isUser && "justify-end")}>
       {!isUser && (
@@ -86,15 +81,10 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
       {isUser && (
         <Avatar className="w-9 h-9">
           <AvatarFallback>
-            {user?.isAnonymous || !user?.displayName ? (
-                <User className="w-5 h-5" />
-            ) : (
-                getInitials(user.displayName)
-            )}
+            <User className="w-5 h-5" />
           </AvatarFallback>
         </Avatar>
       )}
     </div>
   );
 }
-

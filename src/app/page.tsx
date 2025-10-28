@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { TesseractLogo } from '@/components/ui/tesseract-logo';
-import { User, UserPlus, LogIn, Info } from 'lucide-react';
+import { User, Info, MessageSquare } from 'lucide-react';
 
 export default function WelcomePage() {
   return (
@@ -20,25 +20,13 @@ export default function WelcomePage() {
         <p className="text-md text-muted-foreground">
           Built by <span className="font-semibold animate-blink-blue">Vinit Kumar Yadav</span>.
         </p>
-        <p className="text-muted-foreground">Get started by choosing an option below.</p>
+        <p className="text-muted-foreground">Get started by entering the chat.</p>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 w-full max-w-2xl">
-          <Button asChild size="lg" className="h-auto py-4 font-headline text-lg shadow-lg hover:shadow-accent/50 transition-shadow flex flex-col gap-2">
-            <Link href="/login">
-              <LogIn className="w-8 h-8" />
-              Sign In
-            </Link>
-          </Button>
-           <Button asChild variant="secondary" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2">
-            <Link href="/signup">
-              <UserPlus className="w-8 h-8" />
-              Sign Up
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="h-auto py-4 font-headline text-lg flex flex-col gap-2 sm:col-span-2" href="/chat">
-             <Link href="/chat?guest=true">
-                <User className="w-8 h-8" />
-                Continue as Guest
+        <div className="flex flex-col gap-4 mt-2 w-full max-w-sm">
+          <Button asChild size="lg" className="h-auto py-4 font-headline text-lg" href="/chat">
+             <Link href="/chat">
+                <MessageSquare className="w-8 h-8" />
+                Start Chatting
             </Link>
           </Button>
         </div>
