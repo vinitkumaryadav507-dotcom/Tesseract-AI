@@ -100,6 +100,12 @@
 }
 
 @layer utilities {
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
   .bg-animated-gradient {
     background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a237e);
     background-size: 400% 400%;
@@ -115,6 +121,22 @@
     }
     100% {
       background-position: 0% 50%;
+    }
+  }
+  
+  .animate-blink {
+    animation: blink 1.4s infinite both;
+  }
+
+  @keyframes blink {
+    0% {
+      opacity: 0.2;
+    }
+    20% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.2;
     }
   }
 

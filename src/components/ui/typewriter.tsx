@@ -31,7 +31,7 @@ const Typewriter = memo(({ text, speed = 20, onComplete }: TypewriterProps) => {
     }
   }, [text, speed, onComplete]);
 
-  return <div className="whitespace-pre-wrap">{displayedText}</div>;
+  return <p className="whitespace-pre-wrap">{displayedText}</p>;
 });
 
 Typewriter.displayName = 'Typewriter';

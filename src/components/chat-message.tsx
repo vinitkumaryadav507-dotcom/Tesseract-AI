@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import type { Message } from "@/lib/types";
 import { TesseractLogo } from "./ui/tesseract-logo";
 import type { User as FirebaseUser } from "firebase/auth";
+import { Typewriter } from "./ui/typewriter";
 
 interface ChatMessageProps {
   message: Message;
@@ -44,7 +45,7 @@ export function ChatMessage({ message, user }: ChatMessageProps) {
         )}
       >
         <div className="prose prose-sm dark:prose-invert max-w-none text-current prose-p:my-0">
-           <p className="whitespace-pre-wrap">{content}</p>
+           {isUser ? <p className="whitespace-pre-wrap">{content}</p> : <Typewriter text={content} />}
         </div>
         {!isUser && content && (
           <>

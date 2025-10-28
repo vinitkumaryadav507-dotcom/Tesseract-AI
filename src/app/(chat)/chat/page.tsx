@@ -85,7 +85,7 @@ export default function ChatPage() {
     // Update the current chat session in history
     setChatHistory(prevHistory => {
         return prevHistory.map(chat =>
-            chat.id === activeChatId ? { ...chat, messages: newMessages } : chat
+            chat.id === activeChatId ? { ...chat, messages: newMessages, title: newMessages.length === 1 ? 'New Chat' : chat.title } : chat
         );
     });
 
@@ -98,11 +98,20 @@ export default function ChatPage() {
         const modelMessage: Message = { role: 'model', content: aiResponse.content };
         const finalMessages = [...newMessages, modelMessage];
         setMessages(finalMessages);
+        
+        let chatTitle = 'New Chat';
+        if (newMessages.length === 1) {
+            // This is a simplified title logic, for a smarter one we'd use another AI call
+            chatTitle = input.substring(0, 30) + (input.length > 30 ? '...' : '');
+        }
+
         setChatHistory(prevHistory => {
+            const currentChat = prevHistory.find(chat => chat.id === activeChatId);
             return prevHistory.map(chat =>
-                chat.id === activeChatId ? { ...chat, messages: finalMessages } : chat
+                chat.id === activeChatId ? { ...chat, messages: finalMessages, title: newMessages.length === 1 ? chatTitle : currentChat?.title || 'Chat' } : chat
             );
         });
+
       } else {
         throw new Error('No response from AI');
       }
@@ -152,8 +161,8 @@ export default function ChatPage() {
   const deleteChat = (chatId: string) => {
     setChatHistory(prev => prev.filter(c => c.id !== chatId));
     if (activeChatId === chatId) {
-      const nextChat = chatHistory[0] || null;
-      if (nextChat && nextChat.id !== chatId) {
+      const nextChat = chatHistory.find(c => c.id !== chatId) || chatHistory[0];
+      if (nextChat) {
         switchChat(nextChat.id);
       } else {
         startNewChat();
@@ -186,9 +195,6 @@ export default function ChatPage() {
             <TesseractLogo className="size-8 transition-transform group-hover:rotate-12" />
             <h1 className="text-lg font-semibold tracking-tight font-headline">Tesseract AI</h1>
           </Link>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="size-5" />
-          </Button>
         </div>
         <div className="p-2">
             <Button onClick={startNewChat} className="w-full justify-start">
@@ -212,7 +218,10 @@ export default function ChatPage() {
                     variant="ghost" 
                     size="icon" 
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover:opacity-100"
-                    onClick={() => deleteChat(chat.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteChat(chat.id);
+                    }}
                 >
                     <Trash2 className="size-4"/>
                 </Button>
@@ -288,7 +297,11 @@ export default function ChatPage() {
                         <div className="flex items-start gap-4">
                             <TesseractLogo className="w-9 h-9 p-1.5 border rounded-full" />
                             <div className="max-w-[75%] rounded-lg border p-3.5 shadow-sm bg-card">
-                                <p>Thinking...</p>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="h-2 w-2 rounded-full bg-muted-foreground animate-blink" />
+                                    <span className="h-2 w-2 rounded-full bg-muted-foreground animate-blink animation-delay-200" />
+                                    <span className="h-2 w-2 rounded-full bg-muted-foreground animate-blink animation-delay-400" />
+                                </div>
                             </div>
                         </div>
                     )}
