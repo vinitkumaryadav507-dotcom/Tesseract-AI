@@ -10,7 +10,7 @@ export default function WelcomePage() {
       <div className="relative z-10 flex flex-col items-center gap-4">
         <TesseractLogo className="w-32 h-32" />
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground tracking-tight">
-          Welcome to Tesseract AI
+          Tesseract AI
         </h1>
         <div className="max-w-2xl text-lg text-muted-foreground text-center flex flex-col gap-2">
             <p>
